@@ -1,6 +1,6 @@
 import {Button} from "../web_modules/azure-devops-ui/Button.js";
 import {Spinner} from "../web_modules/azure-devops-ui/Spinner.js";
-import React, {useState, useEffect} from "../web_modules/react.js";
+import React, {useState} from "../web_modules/react.js";
 import swc from "../web_modules/@microsoft/sarif-web-component.js";
 const readAsText = (file) => new Promise((resolve, reject) => {
   let reader = new FileReader();
@@ -12,11 +12,8 @@ const {Viewer} = swc;
 export function App() {
   const [analyzing, setAnalyzing] = useState(false);
   const [fileName, setFileName] = useState("");
-  const [fileContents, setFileContents] = useState("");
+  const [fileContents, setFileContents] = useState("https://raw.githubusercontent.com/microsoft/sarif-pattern-matcher/main/README.md");
   const [sarif, setSarif] = useState(void 0);
-  useEffect(() => {
-    console.log("sarif", sarif);
-  }, [sarif]);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", {
     className: "intro"
   }, /* @__PURE__ */ React.createElement("div", {
@@ -32,10 +29,17 @@ export function App() {
         setSarif(void 0);
         return;
       }
+      let urlContent = void 0;
+      try {
+        const url = new URL(fileContents);
+        const urlResponse = await fetch(url.toString());
+        urlContent = await urlResponse.text();
+      } catch (_) {
+      }
       setAnalyzing(true);
       const body = new FormData();
       body.append("filename", fileName);
-      body.append("filecontent", fileContents);
+      body.append("filecontent", urlContent ?? fileContents);
       body.append("ruleid", "SEC1001");
       const response = await fetch("https://myspamcheckertest.azurewebsites.net/api/analyze", {method: "POST", body});
       const responseJson = await response.json();
