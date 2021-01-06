@@ -57,7 +57,7 @@ export function App() {
       setFileName(file.name);
       setFileContents(await readAsText(file));
     },
-    placeholder: "Enter text, enter an url, or drop a file here."
+    placeholder: "Enter text, enter a url, or drop a file here."
   })), /* @__PURE__ */ React.createElement("div", {
     className: `viewer ${sarif ? "viewerActive" : ""}`
   }, /* @__PURE__ */ React.createElement(Viewer, {
