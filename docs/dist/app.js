@@ -12,7 +12,7 @@ const {Viewer} = swc;
 export function App() {
   const [analyzing, setAnalyzing] = useState(false);
   const [fileName, setFileName] = useState("");
-  const [fileContents, setFileContents] = useState("https://raw.githubusercontent.com/microsoft/sarif-pattern-matcher/main/README.md");
+  const [fileContents, setFileContents] = useState("");
   const [sarif, setSarif] = useState(void 0);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", {
     className: "intro"
