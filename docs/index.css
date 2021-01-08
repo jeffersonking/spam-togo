@@ -1,4 +1,25 @@
-/* Add CSS styles here! */
+/* Subset of the styles originally provided by azure-devops-ui */
+
+input, select, textarea, button {
+	color: inherit;
+	font-family: inherit;
+	font-size: inherit
+}
+
+html, body {
+	height: 100%;
+	width: 100%
+}
+
+body {
+	display: flex;
+	font-family: "Segoe UI", "-apple-system", BlinkMacSystemFont, Roboto, "Helvetica Neue", Helvetica, Ubuntu, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+	font-size: 0.875rem;
+	margin: 0;
+}
+
+/* Project specific */
+
 body {
 	width: 100%;
 	overflow: hidden;
@@ -30,10 +51,6 @@ body {
 
 .introHeader .bolt-spinner {
 	margin-right: 12px;
-}
-
-.introHeader .bolt-button {
-	/* margin-top: 8px; */
 }
 
 h1 {
