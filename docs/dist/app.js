@@ -57,7 +57,7 @@ export function App() {
       body.append("filename", fileName);
       body.append("filecontent", urlContent ?? fileContents);
       body.append("ruleid", "SEC1001");
-      const response = await fetch("https://sarif-pattern-matcher-public-function.azurewebsites.net/api/analyze", {method: "POST", headers, body});
+      const response = await fetch("https://sarif-pattern-matcher-internal-function.azurewebsites.net/api/analyze", {method: "POST", headers, body});
       const responseJson = await response.json();
       setSarif(responseJson);
       setAnalyzing(false);
