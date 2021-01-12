@@ -1,7 +1,12 @@
+import {InteractionType} from "../web_modules/@azure/msal-browser.js";
+import {AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal, useMsalAuthentication} from "../web_modules/@azure/msal-react.js";
+import swc from "../web_modules/@microsoft/sarif-web-component.js";
 import {Button} from "../web_modules/azure-devops-ui/Button.js";
 import {Spinner} from "../web_modules/azure-devops-ui/Spinner.js";
 import React, {useState} from "../web_modules/react.js";
-import swc from "../web_modules/@microsoft/sarif-web-component.js";
+const request = {
+  scopes: ["api://f42dbafe-6e53-4dce-b025-cc4df39fb5cc/Ruleset.read"]
+};
 const readAsText = (file) => new Promise((resolve, reject) => {
   let reader = new FileReader();
   reader.onload = () => resolve(reader.result);
@@ -10,6 +15,9 @@ const readAsText = (file) => new Promise((resolve, reject) => {
 });
 const {Viewer} = swc;
 export function App() {
+  const isAuthenticated = useIsAuthenticated();
+  const {instance, accounts} = useMsal();
+  const {login} = useMsalAuthentication(InteractionType.Silent, request);
   const [analyzing, setAnalyzing] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileContents, setFileContents] = useState("");
@@ -21,7 +29,7 @@ export function App() {
   }, /* @__PURE__ */ React.createElement("h1", null, "SARIF Pattern Matcher"), analyzing && /* @__PURE__ */ React.createElement(Spinner, null), /* @__PURE__ */ React.createElement(Button, {
     className: "buttonAnalyze",
     primary: !sarif,
-    disabled: analyzing || !fileContents,
+    disabled: !isAuthenticated || analyzing || !fileContents,
     onClick: async () => {
       if (sarif) {
         setFileName("");
@@ -37,16 +45,29 @@ export function App() {
       } catch (_) {
       }
       setAnalyzing(true);
+      const headers = new Headers();
+      if (isAuthenticated) {
+        const tokenResponse = await instance.acquireTokenSilent({
+          account: instance.getAllAccounts()[0],
+          ...request
+        });
+        headers.append("Authorization", `Bearer ${tokenResponse.accessToken}`);
+      }
       const body = new FormData();
       body.append("filename", fileName);
       body.append("filecontent", urlContent ?? fileContents);
       body.append("ruleid", "SEC1001");
-      const response = await fetch("https://myspamcheckertest.azurewebsites.net/api/analyze", {method: "POST", body});
+      const response = await fetch("https://sarif-pattern-matcher-public-function.azurewebsites.net/api/analyze", {method: "POST", headers, body});
       const responseJson = await response.json();
       setSarif(responseJson);
       setAnalyzing(false);
     }
-  }, !sarif ? `Analyze ${fileName}` : `Clear`)), /* @__PURE__ */ React.createElement("textarea", {
+  }, !sarif ? `Analyze ${fileName}` : `Clear`), /* @__PURE__ */ React.createElement(UnauthenticatedTemplate, null, /* @__PURE__ */ React.createElement(Button, {
+    primary: !!fileContents,
+    onClick: () => login(InteractionType.Popup, request)
+  }, "Log in")), /* @__PURE__ */ React.createElement(AuthenticatedTemplate, null, /* @__PURE__ */ React.createElement(Button, {
+    onClick: () => instance.logout()
+  }, "Log out ", accounts[0]?.username))), /* @__PURE__ */ React.createElement("textarea", {
     value: fileContents,
     spellCheck: "false",
     onChange: (e) => setFileContents(e.target.value),

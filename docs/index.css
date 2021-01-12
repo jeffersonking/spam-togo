@@ -8,7 +8,7 @@ input, select, textarea, button {
 
 html, body {
 	height: 100%;
-	width: 100%
+	width: 100%;
 }
 
 body {
@@ -49,8 +49,8 @@ body {
 	padding-top: 8px;
 }
 
-.introHeader .bolt-spinner {
-	margin-right: 12px;
+.introHeader .bolt-button {
+	margin-left: 12px;
 }
 
 h1 {

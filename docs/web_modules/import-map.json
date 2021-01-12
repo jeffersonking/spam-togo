@@ -1,5 +1,7 @@
 {
   "imports": {
+    "@azure/msal-browser": "./@azure/msal-browser.js",
+    "@azure/msal-react": "./@azure/msal-react.js",
     "@microsoft/sarif-web-component": "./@microsoft/sarif-web-component.js",
     "azure-devops-ui/Button": "./azure-devops-ui/Button.js",
     "azure-devops-ui/Spinner": "./azure-devops-ui/Spinner.js",
