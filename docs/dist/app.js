@@ -99,7 +99,7 @@ export function App() {
     logs: sarif && [sarif],
     filterState: {
       Baseline: {value: ["new", "unchanged", "updated"]},
-      Level: {value: ["error", "warning", "none"]}
+      Level: {value: ["error", "warning"]}
     }
   })));
 }
