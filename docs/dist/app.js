@@ -31,7 +31,9 @@ export function App() {
   const [fileContents, setFileContents] = useState("");
   const [sarif, setSarif] = useHistoryState();
   useEffect(() => {
-    setFileName(tryURL(fileContents)?.pathname.split("/").pop() ?? "");
+    const fileName2 = tryURL(fileContents)?.pathname.split("/").pop();
+    if (fileName2)
+      setFileName(fileName2);
   }, [fileContents]);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", {
     className: "intro"
@@ -67,7 +69,7 @@ export function App() {
       const responseJson = await response.json();
       setFileName("");
       setFileContents("");
-      setSarif(responseJson, "#results2");
+      setSarif(responseJson);
       setAnalyzing(false);
     }
   }, "Analyze ", fileName) : /* @__PURE__ */ React.createElement(Button, {
