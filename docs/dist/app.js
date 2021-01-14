@@ -3,7 +3,8 @@ import {AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useM
 import swc from "../web_modules/@microsoft/sarif-web-component.js";
 import {Button} from "../web_modules/azure-devops-ui/Button.js";
 import {Spinner} from "../web_modules/azure-devops-ui/Spinner.js";
-import React, {useState} from "../web_modules/react.js";
+import React, {useEffect, useState} from "../web_modules/react.js";
+import {useHistoryState} from "./useHistoryState.js";
 const request = {
   scopes: ["api://f42dbafe-6e53-4dce-b025-cc4df39fb5cc/Ruleset.read"]
 };
@@ -13,6 +14,13 @@ const readAsText = (file) => new Promise((resolve, reject) => {
   reader.onerror = reject;
   reader.readAsText(file);
 });
+function tryURL(url) {
+  try {
+    return new URL(url);
+  } catch (_) {
+  }
+  return void 0;
+}
 const {Viewer} = swc;
 export function App() {
   const isAuthenticated = useIsAuthenticated();
@@ -21,26 +29,25 @@ export function App() {
   const [analyzing, setAnalyzing] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileContents, setFileContents] = useState("");
-  const [sarif, setSarif] = useState(void 0);
+  const [sarif, setSarif] = useHistoryState();
+  useEffect(() => {
+    setFileName(tryURL(fileContents)?.pathname.split("/").pop() ?? "");
+  }, [fileContents]);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", {
     className: "intro"
   }, /* @__PURE__ */ React.createElement("div", {
     className: "introHeader"
-  }, /* @__PURE__ */ React.createElement("h1", null, "SARIF Pattern Matcher"), analyzing && /* @__PURE__ */ React.createElement(Spinner, null), /* @__PURE__ */ React.createElement(Button, {
+  }, /* @__PURE__ */ React.createElement("h1", null, "CredScan-on-Push Tester"), analyzing && /* @__PURE__ */ React.createElement(Spinner, null), !sarif ? /* @__PURE__ */ React.createElement(Button, {
     className: "buttonAnalyze",
-    primary: !sarif,
-    disabled: !isAuthenticated || analyzing || !fileContents,
+    primary: true,
+    disabled: !isAuthenticated || !fileContents || analyzing,
     onClick: async () => {
-      if (sarif) {
-        setFileName("");
-        setFileContents("");
-        setSarif(void 0);
-        return;
-      }
+      let urlFileName = void 0;
       let urlContent = void 0;
       try {
         const url = new URL(fileContents);
         const urlResponse = await fetch(url.toString());
+        urlFileName = url.pathname.split("/").pop();
         urlContent = await urlResponse.text();
       } catch (_) {
       }
@@ -58,10 +65,15 @@ export function App() {
       body.append("filecontent", urlContent ?? fileContents);
       const response = await fetch("https://sarif-pattern-matcher-internal-function.azurewebsites.net/api/analyze", {method: "POST", headers, body});
       const responseJson = await response.json();
-      setSarif(responseJson);
+      setFileName("");
+      setFileContents("");
+      setSarif(responseJson, "#results2");
       setAnalyzing(false);
     }
-  }, !sarif ? `Analyze ${fileName}` : `Clear`), /* @__PURE__ */ React.createElement(UnauthenticatedTemplate, null, /* @__PURE__ */ React.createElement(Button, {
+  }, "Analyze ", fileName) : /* @__PURE__ */ React.createElement(Button, {
+    className: "buttonAnalyze",
+    onClick: async () => history.back()
+  }, "Clear"), /* @__PURE__ */ React.createElement(UnauthenticatedTemplate, null, /* @__PURE__ */ React.createElement(Button, {
     primary: !!fileContents,
     onClick: () => login(InteractionType.Popup, request)
   }, "Sign in")), /* @__PURE__ */ React.createElement(AuthenticatedTemplate, null, /* @__PURE__ */ React.createElement(Button, {
@@ -69,6 +81,7 @@ export function App() {
   }, "Sign out ", accounts[0]?.username))), /* @__PURE__ */ React.createElement("textarea", {
     value: fileContents,
     spellCheck: "false",
+    autoComplete: "off",
     onChange: (e) => setFileContents(e.target.value),
     onDragOver: (e) => e.preventDefault(),
     onDrop: async (e) => {
@@ -81,6 +94,10 @@ export function App() {
   })), /* @__PURE__ */ React.createElement("div", {
     className: `viewer ${sarif ? "viewerActive" : ""}`
   }, /* @__PURE__ */ React.createElement(Viewer, {
-    logs: sarif && [sarif]
+    logs: sarif && [sarif],
+    filterState: {
+      Baseline: {value: ["new", "unchanged", "updated"]},
+      Level: {value: ["error", "warning", "none"]}
+    }
   })));
 }
