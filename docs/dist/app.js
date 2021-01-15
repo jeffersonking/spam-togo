@@ -15,6 +15,8 @@ const readAsText = (file) => new Promise((resolve, reject) => {
   reader.readAsText(file);
 });
 function tryURL(url) {
+  if (!url.startsWith("http"))
+    return void 0;
   try {
     return new URL(url);
   } catch (_) {
@@ -47,7 +49,9 @@ export function App() {
       let urlFileName = void 0;
       let urlContent = void 0;
       try {
-        const url = new URL(fileContents);
+        const url = tryURL(fileContents);
+        if (!url)
+          throw new Error("URL is empty");
         const urlResponse = await fetch(url.toString());
         urlFileName = url.pathname.split("/").pop();
         urlContent = await urlResponse.text();
